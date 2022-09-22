@@ -13,14 +13,5 @@ class PhotoViewDetails extends StatelessWidget {
     return PhotoView(
       imageProvider: CachedNetworkImageProvider(image),
     );
-
-    // return PhotoView.builder(
-    //   itemCount: 10,
-    //   builder: (BuildContext context, int index) {
-    //     return CachedNetworkImage(
-    //       imageUrl: image,
-    //       fit: BoxFit.contain,
-    //     );
-    //   },
   }
 }

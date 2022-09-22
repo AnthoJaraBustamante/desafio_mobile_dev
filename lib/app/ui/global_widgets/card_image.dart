@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:desafio_mobile_dev/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/instance_manager.dart';
 
 class CardImages extends StatelessWidget {
   const CardImages({
@@ -13,7 +15,9 @@ class CardImages extends StatelessWidget {
     this.pageController,
     this.onPageChanged,
     required this.itemCount,
-    this.isDeactivated = false,
+    // this.isDeactivated = false,
+    this.height = 500,
+    this.onTap,
   }) : super(key: key);
   final int id;
   final String image;
@@ -23,21 +27,20 @@ class CardImages extends StatelessWidget {
   final PageController? pageController;
   final void Function(int)? onPageChanged;
   final int? itemCount;
-  final bool isDeactivated;
+  // final bool isDeactivated;
+  final void Function()? onTap;
+  final double height;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        if (isDeactivated) return;
-        Navigator.pushNamed(
-          context,
-          AppRoutes.gallery,
-        );
-      },
+      onTap: onTap ??
+          () {
+            Get.toNamed(AppRoutes.gallery, arguments: [id, itemCount]);
+          },
       child: Stack(
         children: [
           Container(
-            height: 500,
+            height: height,
             clipBehavior: Clip.antiAlias,
             margin: EdgeInsets.all(margin),
             decoration: BoxDecoration(

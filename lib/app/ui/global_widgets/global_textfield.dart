@@ -22,10 +22,9 @@ class GlobalTextFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: validator,
+  
       controller: controller,
       obscureText: obscureText,
-      //give a rounded aspect
       decoration: InputDecoration(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),

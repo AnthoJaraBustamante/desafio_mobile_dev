@@ -1,7 +1,11 @@
-import 'package:desafio_mobile_dev/app/data/providers/upload_image_provider.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:desafio_mobile_dev/app/ui/global_widgets/card_image.dart';
+import 'package:desafio_mobile_dev/app/ui/pages/gallery_page/controllers/gallery_controller.dart';
+import 'package:desafio_mobile_dev/app/ui/pages/gallery_page/widgets/details_photo_view.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/state_manager.dart';
 
 class GalleryPage extends StatelessWidget {
   const GalleryPage({Key? key}) : super(key: key);
@@ -15,9 +19,10 @@ class GalleryPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Galería'),
       ),
-      body: ChangeNotifierProvider(
-       create: (_) => UploadImageProvider(),
-        child: const GalleryContent(),
+      body: GetBuilder<GalleryController>(
+        builder: (_) {
+          return GalleryContent(controller: _);
+        },
       ),
     );
   }
@@ -26,35 +31,57 @@ class GalleryPage extends StatelessWidget {
 class GalleryContent extends StatelessWidget {
   const GalleryContent({
     Key? key,
+    required this.controller,
   }) : super(key: key);
-
+  final GalleryController controller;
   @override
   Widget build(BuildContext context) {
-    final UploadImageProvider provider =
-        Provider.of<UploadImageProvider>(context);
-    provider.init();
+    var selected = controller.selectedPhotos[controller.selectedId].url;
+
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Container(
-          color: Colors.red,
-          height: 200,
-          width: double.infinity,
-        ),
         Expanded(
-          child: GridView.count(
-            crossAxisCount: 2, 
-            children: [
-              ...provider.savedPhotos
-                  .map((e) => CardImages(
-                        isDeactivated: true,
-                        id: e.id,
-                        image: e.url,
-                        itemCount: provider.savedPhotos.length,
-                      ))
-                  .toList()
-            ],
+          child: CardImages(
+            
+            id: controller.selectedId,
+            image: selected,
+            itemCount: controller.itemCount,
+            onTap: () {
+              Get.dialog(PhotoViewDetails(image: selected));
+            },
           ),
         ),
+         
+        if (controller.selectedPhotos.length > 1)
+          CarouselSlider(
+            carouselController: controller.carouselController,
+            items: [
+              ...controller.selectedPhotos.map(
+                (e) => CardImages(
+                  id: e.id,
+                  image: e.url,
+                  itemCount: controller.itemCount,
+                  margin: 5.0,
+                  borderRadius: 10.0,
+                  onTap: () {},
+                ),
+              ),
+            ],
+            options: CarouselOptions(
+              height: 200.0,
+              enlargeCenterPage: true,
+              enlargeStrategy: CenterPageEnlargeStrategy.scale,
+              autoPlay: false,
+              aspectRatio: 16 / 9,
+              autoPlayCurve: Curves.fastOutSlowIn,
+              enableInfiniteScroll: false,
+              autoPlayAnimationDuration: const Duration(milliseconds: 800),
+              viewportFraction: 0.5,
+              onPageChanged: controller.onPageChanged,
+            ),
+          )
       ],
     );
   }
