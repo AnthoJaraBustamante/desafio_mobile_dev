@@ -17,7 +17,8 @@ class UploadPage extends StatelessWidget {
         title: const SearchTextField(),
       ),
       body: Center(
-        child: SizedBox(
+        child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -97,7 +98,6 @@ class ThumbnailList extends StatelessWidget {
             enableInfiniteScroll: false,
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
             viewportFraction: 0.5,
-          
           ),
         );
       }),

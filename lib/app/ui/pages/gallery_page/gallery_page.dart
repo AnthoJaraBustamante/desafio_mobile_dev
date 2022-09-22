@@ -21,7 +21,9 @@ class GalleryPage extends StatelessWidget {
       ),
       body: GetBuilder<GalleryController>(
         builder: (_) {
-          return GalleryContent(controller: _);
+          return ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: GalleryContent(controller: _));
         },
       ),
     );
@@ -40,11 +42,10 @@ class GalleryContent extends StatelessWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: CardImages(
-            
             id: controller.selectedId,
             image: selected,
             itemCount: controller.itemCount,
@@ -53,7 +54,6 @@ class GalleryContent extends StatelessWidget {
             },
           ),
         ),
-         
         if (controller.selectedPhotos.length > 1)
           CarouselSlider(
             carouselController: controller.carouselController,
