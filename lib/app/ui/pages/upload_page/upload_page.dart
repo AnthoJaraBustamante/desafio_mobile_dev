@@ -1,5 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:desafio_mobile_dev/app/data/providers/upload_image_provider.dart';
+import 'package:desafio_mobile_dev/app/ui/global_widgets/card_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class UploadPage extends StatelessWidget {
   const UploadPage({Key? key}) : super(key: key);
@@ -9,45 +12,25 @@ class UploadPage extends StatelessWidget {
     //crear vista con campo input en la parte superior, para escribir o pegar una URL de imagen. Junto al input, debe existir un botón "cargar imagen". Al presionar cargar imagen, debe mostrar bajo el input, un cuadro grande con la imagen obtenida desde la URL, ocupando todo el ancho de la pantalla y hacia abajo dejando un espacio para mostrar una miniatura centrada de la misma imagen.
     // crea un search delegate
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const SearchTextField(),
-      ),
-      body: Center(
-        child: SizedBox(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Expanded(
-                child: _CardImages(
-                  image: 'https://picsum.photos/250?image=0',
-                ),
-              ),
-              const SizedBox(height: 20),
-              CarouselSlider(
-                items: [
-                  for (var i = 0; i < 5; i++)
-                    _CardImages(
-                      image: 'https://picsum.photos/250?image=$i',
-                      margin: 5.0,
-                      borderRadius: 10.0,
-                    ),
-                ],
-                options: CarouselOptions(
-                  height: 200.0,
-                  enlargeCenterPage: true,
-                  enlargeStrategy: CenterPageEnlargeStrategy.height,
-                  autoPlay: false,
-                  aspectRatio: 16 / 9,
-                  autoPlayCurve: Curves.fastOutSlowIn,
-                  enableInfiniteScroll: false,
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  viewportFraction: 0.8,
-                ),
-              )
-              //mostrar miniatura de todas las imagenes
-            ],
+    return ChangeNotifierProvider(
+      create: (_) => UploadImageProvider(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const SearchTextField(),
+        ),
+        body: Center(
+          child: SizedBox(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                CurrentCardImage(),
+                SizedBox(height: 10),
+                ThumbnailList(),
+                SizedBox(height: 10),
+                //mostrar miniatura de todas las imagenes
+              ],
+            ),
           ),
         ),
       ),
@@ -55,34 +38,64 @@ class UploadPage extends StatelessWidget {
   }
 }
 
-class _CardImages extends StatelessWidget {
-  const _CardImages({
+class CurrentCardImage extends StatelessWidget {
+  const CurrentCardImage({
     Key? key,
-    required this.image,
-    this.margin = 0.0,
-    this.borderRadius = 0.0,
   }) : super(key: key);
-
-  final String image;
-  final double margin;
-  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 500,
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.all(margin),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-      child: Center(
-        child: Image.network(
-          image,
-          width: double.infinity,
-          height: double.infinity,
-          fit: BoxFit.cover,
-        ),
+    final UploadImageProvider provider =
+        Provider.of<UploadImageProvider>(context);
+    provider.init();
+    return provider.currentPhoto == null
+        ? const SizedBox()
+        : Expanded(
+            child: CardImages(
+              id: provider.currentPhoto!.id,
+              image: provider.currentPhoto!.url,
+              itemCount: provider.savedPhotos.length,
+            ),
+          );
+  }
+}
+
+class ThumbnailList extends StatelessWidget {
+  const ThumbnailList({
+    Key? key,
+  }) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    final UploadImageProvider provider =
+        Provider.of<UploadImageProvider>(context);
+    return CarouselSlider(
+      items: [
+        ...provider.savedPhotos
+            .map(
+              (e) => CardImages(
+                id: e.id,
+                image: e.url,
+                margin: 5.0,
+                borderRadius: 10.0,
+                onTapDelete: () {
+                  provider.removeImage(e.id);
+                },
+                itemCount: provider.savedPhotos.length,
+                // pageController: provider.pageController,
+              ),
+            )
+            .toList()
+      ],
+      options: CarouselOptions(
+        height: 200.0,
+        enlargeCenterPage: true,
+        enlargeStrategy: CenterPageEnlargeStrategy.scale,
+        autoPlay: false,
+        aspectRatio: 16 / 9,
+        autoPlayCurve: Curves.fastOutSlowIn,
+        enableInfiniteScroll: false,
+        autoPlayAnimationDuration: const Duration(milliseconds: 800),
+        viewportFraction: 0.5,
       ),
     );
   }
@@ -93,6 +106,8 @@ class SearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final UploadImageProvider provider =
+        Provider.of<UploadImageProvider>(context);
     return Theme(
       data: Theme.of(context).copyWith(
         textSelectionTheme: const TextSelectionThemeData(
@@ -103,9 +118,10 @@ class SearchTextField extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: TextField(
-              toolbarOptions: ToolbarOptions(
+              controller: provider.searchController,
+              toolbarOptions: const ToolbarOptions(
                 copy: true,
                 paste: true,
                 cut: true,
@@ -114,8 +130,8 @@ class SearchTextField extends StatelessWidget {
               enableInteractiveSelection: true,
               keyboardType: TextInputType.text,
               cursorColor: Colors.white,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
                 hintText: 'Ingresa URL',
                 hintStyle: TextStyle(color: Colors.white),
                 border: InputBorder.none,
@@ -123,7 +139,36 @@ class SearchTextField extends StatelessWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              if (provider.searchController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Ingrese una URL'),
+                  ),
+                );
+                return;
+              }
+              //si la url no es una url valida
+              if (!Uri.parse(provider.searchController.text).isAbsolute) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No es una URL válida'),
+                  ),
+                );
+                return;
+              }
+              if (provider.savedPhotos.length >= 5) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Solo se pueden cargar 5 imágenes'),
+                  ),
+                );
+                return;
+              }
+              provider.addImage(provider.searchController.text);
+              provider.searchController.clear();
+              return;
+            },
             child: const Text('Cargar imagen'),
           ),
         ],
@@ -131,5 +176,3 @@ class SearchTextField extends StatelessWidget {
     );
   }
 }
-//change color of cursor in textfield
-// https://stackoverflow.com/questions/59170249/how-to-change-the-cursor-color-in-flutter

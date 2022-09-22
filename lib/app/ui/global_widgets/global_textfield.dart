@@ -1,3 +1,4 @@
+import 'package:desafio_mobile_dev/app/ui/theme/color_theme.dart';
 import 'package:flutter/material.dart';
 
 class GlobalTextFormField extends StatelessWidget {
@@ -28,6 +29,7 @@ class GlobalTextFormField extends StatelessWidget {
       decoration: InputDecoration(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: ThemeColor.primary, width: 1),
         ),
         prefixIcon: Icon(prefixIcon),
         labelText: labelText,

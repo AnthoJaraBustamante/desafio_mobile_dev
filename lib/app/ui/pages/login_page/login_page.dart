@@ -1,6 +1,7 @@
 import 'package:desafio_mobile_dev/app/data/providers/login_form_provider.dart';
 import 'package:desafio_mobile_dev/app/routes/app_routes.dart';
 import 'package:desafio_mobile_dev/app/ui/global_widgets/global_textfield.dart';
+import 'package:desafio_mobile_dev/app/ui/theme/color_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,10 +21,14 @@ class LoginPage extends StatelessWidget {
             children: [
               const Text(
                 'Inicia sesión',
-                style: TextStyle(fontSize: 30),
+                style: TextStyle(
+                  fontSize: 30,
+                  color: ThemeColor.primary,
+                ),
               ),
               const Icon(
                 Icons.person,
+                color: ThemeColor.primary,
                 size: 100,
               ),
               const SizedBox(
